@@ -1,0 +1,16 @@
+.settings
+.classpath
+.idea
+.project
+bin
+gen
+out
+local.properties
+.gradle
+*.iml
+*.ipr
+*.iws
+*.class
+build
+.DS_Store
+/.nb-gradle
