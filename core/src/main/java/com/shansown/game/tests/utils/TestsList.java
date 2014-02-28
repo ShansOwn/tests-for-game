@@ -2,6 +2,7 @@ package com.shansown.game.tests.utils;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.shansown.game.tests.Test1_SceneLoading;
+import com.shansown.game.tests.Test2_Animation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +13,8 @@ public class TestsList {
 
     //Add new tests here
     public static final List<Class<? extends ApplicationListener>> tests = new ArrayList<Class<? extends ApplicationListener>>(Arrays.asList(
-            Test1_SceneLoading.class
+            Test1_SceneLoading.class,
+            Test2_Animation.class
     ));
 
     public static List<String> getNames () {
