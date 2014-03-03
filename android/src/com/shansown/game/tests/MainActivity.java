@@ -19,10 +19,8 @@ public class MainActivity extends AndroidApplication {
         ApplicationListener test = TestsList.newTest(testName);
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        config.useGL20 = true;
         config.useWakelock = true;
         config.hideStatusBar = true;
-        config.useGLSurfaceViewAPI18 = true;
         config.useImmersiveMode = true;
 
 		initialize(test, config);

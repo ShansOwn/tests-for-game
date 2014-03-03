@@ -4,7 +4,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.FPSLogger;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -68,7 +68,7 @@ public class Test2_Animation implements ApplicationListener {
 
         ModelBuilder builder = new ModelBuilder();
         builder.begin();
-        MeshPartBuilder part = builder.part("floor", GL10.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates | VertexAttributes.Usage.Normal, new Material());
+        MeshPartBuilder part = builder.part("floor", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates | VertexAttributes.Usage.Normal, new Material());
         for (float x = -200f; x < 200f; x += 10f) {
             for (float z = -200f; z < 200f; z += 10f) {
                 part.rect(x, 0, z+10f, x+10f, 0, z+10f, x+10f, 0, z, x, 0, z, 0, 1, 0);
@@ -77,14 +77,8 @@ public class Test2_Animation implements ApplicationListener {
         floorModel = builder.end();
     }
 
-
-
     @Override
     public void render() {
-
-
-
-
         if (character != null) {
             animation.update(Gdx.graphics.getDeltaTime());
             /*if (upKey) {
@@ -133,14 +127,13 @@ public class Test2_Animation implements ApplicationListener {
 
         if (loading && assets.update()) {
             loading = false;
-            Gdx.app.log("Test", "onLoaded");
             doneLoading();
         }
 
         camController.update();
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(cam);
         if (instances != null)
@@ -148,7 +141,7 @@ public class Test2_Animation implements ApplicationListener {
         if (skydome != null)
             modelBatch.render(skydome);
         modelBatch.end();
-//        fpsLogger.log();
+        fpsLogger.log();
     }
 
     @Override
@@ -160,14 +153,12 @@ public class Test2_Animation implements ApplicationListener {
 
     private void doneLoading() {
         if (skydome == null) {
-            Gdx.app.log("Test", "DoneLoading skydome == null");
             skydome = new ModelInstance(assets.get("data/skydome.g3db", Model.class));
             floorModel.materials.get(0).set(TextureAttribute.createDiffuse(assets.get("data/concrete.png", Texture.class)));
             instances.add(new ModelInstance(floorModel));
             assets.load("data/knight.g3db", Model.class);
             loading = true;
         } else if (character == null) {
-            Gdx.app.log("Test", "DoneLoading character == null");
             character = new ModelInstance(assets.get("data/knight.g3db", Model.class));
             BoundingBox bbox = new BoundingBox();
             character.calculateBoundingBox(bbox);
