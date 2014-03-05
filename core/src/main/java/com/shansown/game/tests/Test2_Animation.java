@@ -2,6 +2,9 @@ package com.shansown.game.tests;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,19 +20,19 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
-import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 
-public class Test2_Animation implements ApplicationListener {
+public class Test2_Animation implements ApplicationListener, InputProcessor {
 
     public PerspectiveCamera cam;
-    public CameraInputController camController;
+    public CameraInputController camInputController;
     public ModelBatch modelBatch;
     public AssetManager assets;
     public Array<ModelInstance> instances = new Array<ModelInstance>();
@@ -41,7 +44,18 @@ public class Test2_Animation implements ApplicationListener {
     ModelInstance character;
     AnimationController animation;
 
+    final AnimationController.Transform trTmp = new AnimationController.Transform();
+    final AnimationController.Transform trForward = new AnimationController.Transform();
+    final AnimationController.Transform trSneakForward = new AnimationController.Transform();
+    final AnimationController.Transform trBackward = new AnimationController.Transform();
+    final AnimationController.Transform trSneakBackward = new AnimationController.Transform();
+    final AnimationController.Transform trRight = new AnimationController.Transform();
+    final AnimationController.Transform trLeft = new AnimationController.Transform();
+    final Matrix4 tmpMatrix = new Matrix4();
+
     AnimationState state;
+    int damageCount = 0;
+    boolean rightKey, leftKey, upKey, downKey, shiftKey, spaceKey, enterKey;
     FPSLogger fpsLogger = new FPSLogger();
 
     @Override
@@ -58,9 +72,17 @@ public class Test2_Animation implements ApplicationListener {
         cam.far = 1000f;
         cam.update();
 
-        camController = new CameraInputController(cam);
-        Gdx.input.setInputProcessor(camController);
+        camInputController = new CameraInputController(cam);
+        camInputController.rotateLeftKey = camInputController.rotateRightKey
+                = camInputController.forwardKey = camInputController.backwardKey = 0;
+        Gdx.input.setInputProcessor(new InputMultiplexer(this, camInputController));
 
+        trForward.translation.set(0,0,8f);
+        trSneakForward.translation.set(0,0,5);
+        trBackward.translation.set(0,0,-8f);
+        trSneakBackward.translation.set(0,0,-5);
+        trLeft.rotation.setFromAxis(Vector3.Y, 90);
+        trRight.rotation.setFromAxis(Vector3.Y, -90);
         assets = new AssetManager();
         assets.load("data/skydome.g3db", Model.class);
         assets.load("data/concrete.png", Texture.class);
@@ -81,38 +103,76 @@ public class Test2_Animation implements ApplicationListener {
     public void render() {
         if (character != null) {
             animation.update(Gdx.graphics.getDeltaTime());
-            /*if (upKey) {
-                if (!animation.inAction) {
-                    trTmp.idt().lerp(trForward, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
+            if (state != AnimationState.DIE) {
+                if (upKey) {
+                    if (shiftKey) {
+                        if (!animation.inAction) {
+                            trTmp.idt().lerp(trSneakForward, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
+                            character.transform.mul(trTmp.toMatrix4(tmpMatrix));
+                        }
+                        if (state != AnimationState.SNEAK_FORWARD) {
+                            animation.animate("Sneak", -1, 1f, null, 0.2f);
+                            state = AnimationState.SNEAK_FORWARD;
+                        }
+                    } else {
+                        if (!animation.inAction) {
+                            trTmp.idt().lerp(trForward, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
+                            character.transform.mul(trTmp.toMatrix4(tmpMatrix));
+                        }
+                        if (state != AnimationState.WALK) {
+                            animation.animate("Walk", -1, 1f, null, 0.2f);
+                            state = AnimationState.WALK;
+                        }
+                    }
+                } else if (downKey) {
+                    if (shiftKey) {
+                        if (!animation.inAction) {
+                            trTmp.idt().lerp(trSneakBackward, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
+                            character.transform.mul(trTmp.toMatrix4(tmpMatrix));
+                        }
+                        if (state != AnimationState.SNEAK_BACK) {
+                            animation.animate("Sneak", -1, -1f, null, 0.2f);
+                            state = AnimationState.SNEAK_BACK;
+                        }
+                    } else {
+                        if (!animation.inAction) {
+                            trTmp.idt().lerp(trBackward, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
+                            character.transform.mul(trTmp.toMatrix4(tmpMatrix));
+                        }
+                        if (state != AnimationState.BACK) {
+                            animation.animate("Walk", -1, -1f, null, 0.2f);
+                            state = AnimationState.BACK;
+                        }
+                    }
+                } else if (state != AnimationState.IDLE) {
+                    animation.animate("Idle", -1, 1f, null, 0.2f);
+                    state = AnimationState.IDLE;
+                }
+                if (rightKey && (state == AnimationState.WALK
+                        || state == AnimationState.BACK || state == AnimationState.SNEAK_FORWARD
+                        || state == AnimationState.SNEAK_BACK) && !animation.inAction) {
+                    trTmp.idt().lerp(trRight, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
+                    character.transform.mul(trTmp.toMatrix4(tmpMatrix));
+                } else if (leftKey && (state == AnimationState.WALK
+                        || state == AnimationState.BACK || state == AnimationState.SNEAK_FORWARD
+                        || state == AnimationState.SNEAK_BACK) && !animation.inAction) {
+                    trTmp.idt().lerp(trLeft, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
                     character.transform.mul(trTmp.toMatrix4(tmpMatrix));
                 }
-                if (status != walk) {
-                    animation.animate("Walk", -1, 1f, null, 0.2f);
-                    status = walk;
+                if (spaceKey && !animation.inAction) {
+                    animation.action("Attack", 1, 1f, null, 0.2f);
+                    state = AnimationState.ATTACK;
                 }
-            } else if (downKey) {
-                if (!animation.inAction) {
-                    trTmp.idt().lerp(trBackward, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
-                    character.transform.mul(trTmp.toMatrix4(tmpMatrix));
+                if (enterKey && state != AnimationState.DAMAGED) {
+                    if (damageCount < 3) {
+                        animation.action("Damaged", 1, 1f, null, 0.2f);
+                        state = AnimationState.DAMAGED;
+                    } else {
+                        animation.action("Die", 1, 1f, new DieAnimationListener(), 0.2f);
+                        state = AnimationState.DIE;
+                    }
                 }
-                if (status != back) {
-                    animation.animate("Walk", -1, -1f, null, 0.2f);
-                    status = back;
-                }
-            } else if (status != idle) {*/
-                animation.animate("Idle", -1, 1f, null, 0.2f);
-                /*status = idle;
             }
-            if (rightKey && (status == walk || status == back) && !animation.inAction) {
-                trTmp.idt().lerp(trRight, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
-                character.transform.mul(trTmp.toMatrix4(tmpMatrix));
-            } else if (leftKey && (status == walk || status == back) && !animation.inAction) {
-                trTmp.idt().lerp(trLeft, Gdx.graphics.getDeltaTime() / animation.current.animation.duration);
-                character.transform.mul(trTmp.toMatrix4(tmpMatrix));
-            }
-            if (spaceKey && !animation.inAction) {
-                animation.action("Attack", 1, 1f, null, 0.2f);
-            }*/
         }
 
         /*if (character != null) {
@@ -130,7 +190,7 @@ public class Test2_Animation implements ApplicationListener {
             doneLoading();
         }
 
-        camController.update();
+        camInputController.update();
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
@@ -187,7 +247,90 @@ public class Test2_Animation implements ApplicationListener {
 
     }
 
+    @Override
+    public boolean keyDown(int keycode) {
+        if (keycode == Input.Keys.A)
+            leftKey = true;
+        if (keycode == Input.Keys.D)
+            rightKey = true;
+        if (keycode == Input.Keys.W)
+            upKey = true;
+        if (keycode == Input.Keys.S)
+            downKey = true;
+        if (keycode == Input.Keys.SHIFT_LEFT)
+            shiftKey = true;
+        if (keycode == Input.Keys.ENTER) {
+            enterKey = true;
+            damageCount++;
+        }
+        if (keycode == Input.Keys.SPACE)
+            spaceKey = true;
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        if (keycode == Input.Keys.A)
+            leftKey = false;
+        if (keycode == Input.Keys.D)
+            rightKey = false;
+        if (keycode == Input.Keys.W)
+            upKey = false;
+        if (keycode == Input.Keys.S)
+            downKey = false;
+        if (keycode == Input.Keys.SHIFT_LEFT)
+            shiftKey = false;
+        if (keycode == Input.Keys.ENTER)
+            enterKey = false;
+        if (keycode == Input.Keys.SPACE)
+            spaceKey = false;
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
+    }
+
     private enum AnimationState {
-        IDLE, WALK, BACK, ATTACK
+        IDLE, WALK, BACK, ATTACK, DAMAGED, SNEAK_FORWARD, SNEAK_BACK, DIE
+    }
+
+    private class DieAnimationListener implements AnimationController.AnimationListener {
+
+        @Override
+        public void onEnd(AnimationController.AnimationDesc anim) {
+            animation.paused = true;
+        }
+
+        @Override
+        public void onLoop(AnimationController.AnimationDesc animation) {
+
+        }
     }
 }
