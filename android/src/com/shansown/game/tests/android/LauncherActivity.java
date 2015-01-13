@@ -1,4 +1,4 @@
-package com.shansown.game.tests;
+package com.shansown.game.tests.android;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -38,7 +38,7 @@ public class LauncherActivity extends ListActivity {
 
         Bundle bundle = new Bundle();
         bundle.putString("test", testName);
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, AndroidApp.class);
         intent.putExtras(bundle);
 
         startActivity(intent);

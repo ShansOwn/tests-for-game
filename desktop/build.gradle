@@ -1,17 +1,46 @@
-sourceCompatibility = 1.7
+apply plugin: "java"
 
-run {
+sourceCompatibility = 1.6
+sourceSets.main.java.srcDirs = [ "src/" ]
+
+project.ext.mainClassName = "com.shansown.game.tests.desktop.DesktopLauncher"
+project.ext.assetsDir = new File("../android/assets");
+
+task run(dependsOn: classes, type: JavaExec) {
+    main = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.assetsDir
     ignoreExitValue = true
 }
 
-mainClassName = "com.shansown.game.tests.DesktopLauncher"
-
-sourceSets.main.resources.srcDirs = [file("../android/assets").getAbsolutePath()]
-
-eclipse.project {
-    name = appName + "-desktop"
+task dist(type: Jar) {
+    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.output.resourcesDir)
+    from {configurations.compile.collect {zipTree(it)}}
+    from files(project.assetsDir);
+ 
+    manifest {
+        attributes 'Main-Class': project.mainClassName
+    }
 }
 
-tasks.ideaModule.doFirst {
-    sourceSets.main.resources.srcDirs = []
+dist.dependsOn classes
+
+eclipse {
+    project {
+        name = appName + "-desktop"
+        linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/android/assets'
+    }
+}
+
+task afterEclipseImport(description: "Post processing after project generation", group: "IDE") {
+  doLast {
+    def classpath = new XmlParser().parse(file(".classpath"))
+    new Node(classpath, "classpathentry", [ kind: 'src', path: 'assets' ]);
+    def writer = new FileWriter(file(".classpath"))
+    def printer = new XmlNodePrinter(new PrintWriter(writer))
+    printer.setPreserveWhitespace(true)
+    printer.print(classpath)
+  }
 }
