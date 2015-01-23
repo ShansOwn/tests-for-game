@@ -273,5 +273,6 @@ public class Test0_Bullet_Base extends InputAdapter implements ApplicationListen
 
     @Override
     public void resize (int width, int height) {
+        stage.getViewport().update(width, height, true);
     }
 }
