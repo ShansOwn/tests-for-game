@@ -23,12 +23,9 @@ public class Test0_Bullet_Tests implements ApplicationListener {
 
     private Application app = null;
 
-    private BitmapFont font;
     private Stage hud;
     private Label fpsLabel;
     private Label titleLabel;
-    private Label nextLabel;
-    private Label previousLabel;
     private CameraInputController cameraController;
 
     @Override
@@ -38,7 +35,7 @@ public class Test0_Bullet_Tests implements ApplicationListener {
             tests[testIndex].create();
         }
 
-        font = new BitmapFont(Gdx.files.internal("data/arial-15.fnt"), false);
+        BitmapFont font = new BitmapFont(Gdx.files.internal("data/arial-15.fnt"), false);
         hud = new Stage();
         fpsLabel = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
         fpsLabel.setPosition(0, 0);
@@ -46,7 +43,7 @@ public class Test0_Bullet_Tests implements ApplicationListener {
         titleLabel = new Label(tests[testIndex].getClass().getSimpleName(), new Label.LabelStyle(font, Color.WHITE));
         titleLabel.setY(hud.getHeight() - titleLabel.getHeight());
         hud.addActor(titleLabel);
-        nextLabel = new Label("next >> ", new Label.LabelStyle(font, Color.WHITE));
+        Label nextLabel = new Label("next >> ", new Label.LabelStyle(font, Color.WHITE));
         nextLabel.setPosition(hud.getWidth() - nextLabel.getWidth(), hud.getHeight() / 2);
         nextLabel.addListener(new InputListener() {
             @Override
@@ -56,7 +53,7 @@ public class Test0_Bullet_Tests implements ApplicationListener {
             }
         });
         hud.addActor(nextLabel);
-        previousLabel = new Label(" << previous", new Label.LabelStyle(font, Color.WHITE));
+        Label previousLabel = new Label(" << previous", new Label.LabelStyle(font, Color.WHITE));
         previousLabel.setPosition(0, hud.getHeight() / 2);
         previousLabel.addListener(new InputListener() {
             @Override
