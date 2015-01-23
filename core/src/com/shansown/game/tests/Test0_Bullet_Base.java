@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -19,6 +20,8 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
@@ -116,9 +119,20 @@ public class Test0_Bullet_Base extends InputAdapter implements ApplicationListen
     btDynamicsWorld dynamicsWorld;
     btConstraintSolver constraintSolver;
 
+    Stage stage;
+    Label label;
+    BitmapFont font;
+    StringBuilder stringBuilder;
+
     @Override
     public void create () {
         Bullet.init();
+
+        stage = new Stage();
+        font = new BitmapFont();
+        label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
+        stage.addActor(label);
+        stringBuilder = new StringBuilder();
 
         modelBatch = new ModelBatch();
         environment = new Environment();
@@ -220,6 +234,11 @@ public class Test0_Bullet_Base extends InputAdapter implements ApplicationListen
         modelBatch.begin(cam);
         modelBatch.render(instances, environment);
         modelBatch.end();
+
+        stringBuilder.setLength(0);
+        stringBuilder.append(" FPS: ").append(Gdx.graphics.getFramesPerSecond());
+        label.setText(stringBuilder);
+        stage.draw();
     }
 
     @Override
