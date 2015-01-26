@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
@@ -77,7 +78,11 @@ public class Test3_TRex_Animation implements ApplicationListener, InputProcessor
 
         ModelBuilder builder = new ModelBuilder();
         builder.begin();
-        MeshPartBuilder part = builder.part("floor", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates | VertexAttributes.Usage.Normal, new Material());
+        MeshPartBuilder part = builder.part("floor", GL20.GL_TRIANGLES,
+                VertexAttributes.Usage.Position
+                | VertexAttributes.Usage.TextureCoordinates
+                | VertexAttributes.Usage.Normal,
+                new Material());
         for (float x = -200f; x < 200f; x += 10f) {
             for (float z = -200f; z < 200f; z += 10f) {
                 part.rect(x, 0, z+10f, x+10f, 0, z+10f, x+10f, 0, z, x, 0, z, 0, 1, 0);
@@ -93,7 +98,7 @@ public class Test3_TRex_Animation implements ApplicationListener, InputProcessor
 
     @Override
     public void render() {
-        /*if (character != null) {
+        if (character != null) {
             animation.update(Gdx.graphics.getDeltaTime());
             if (state != AnimationState.DIE) {
                 if (upKey) {
@@ -132,7 +137,7 @@ public class Test3_TRex_Animation implements ApplicationListener, InputProcessor
                     state = AnimationState.ATTACK;
                 }
             }
-        }*/
+        }
 
         if (loading && assets.update()) {
             loading = false;
@@ -166,11 +171,11 @@ public class Test3_TRex_Animation implements ApplicationListener, InputProcessor
             character.calculateBoundingBox(bbox);
             character.transform.setToRotation(Vector3.Y, 180).trn(0, -bbox.min.y, 0);
             instances.add(character);
-            /*animation = new AnimationController(character);
+            animation = new AnimationController(character);
             animation.animate("Idle", -1, 1f, null, 0.2f);
             state = AnimationState.IDLE;
             for (Animation anim : character.animations)
-                Gdx.app.log("Test", anim.id);*/
+                Gdx.app.log("Test", anim.id);
         }
     }
 
