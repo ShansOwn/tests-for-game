@@ -191,7 +191,9 @@ public class Test3_TRex_Animation implements ApplicationListener, InputProcessor
 
     @Override
     public void dispose() {
-
+        floorModel.dispose();
+        modelBatch.dispose();
+        assets.dispose();
     }
 
     @Override
