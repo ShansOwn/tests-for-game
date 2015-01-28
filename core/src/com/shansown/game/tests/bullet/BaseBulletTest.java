@@ -2,17 +2,27 @@ package com.shansown.game.tests.bullet;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
+import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.collision.btConvexHullShape;
+import com.badlogic.gdx.physics.bullet.collision.btShapeHull;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.LinearMath;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.utils.Array;
@@ -43,6 +53,8 @@ public class BaseBulletTest extends BulletTest {
     public ModelBatch shadowBatch;
 
     public BulletWorld world;
+    public AssetManager assets;
+    public ObjLoader objLoader = new ObjLoader();
     public ModelBuilder modelBuilder = new ModelBuilder();
     public ModelBatch modelBatch;
     public Array<Disposable> disposables = new Array<Disposable>();
@@ -65,6 +77,7 @@ public class BaseBulletTest extends BulletTest {
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
         modelBatch = new ModelBatch();
+        assets = new AssetManager();
 
         world = createWorld();
         world.performanceCounter = performanceCounter;
@@ -78,12 +91,45 @@ public class BaseBulletTest extends BulletTest {
         camera.position.set(10f, 10f, 10f);
         camera.lookAt(0, 0, 0);
         camera.update();
+
+        // Create some simple models
+        final Model groundModel = modelBuilder.createRect(
+                20f,
+                0f,
+                -20f,
+                -20f,
+                0f,
+                -20f,
+                -20f,
+                0f,
+                20f,
+                20f,
+                0f,
+                20f,
+                0,
+                1,
+                0,
+                new Material(ColorAttribute.createDiffuse(Color.WHITE), ColorAttribute.createSpecular(Color.WHITE),
+                        FloatAttribute.createShininess(16f)), VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        disposables.add(groundModel);
+        final Model boxModel = modelBuilder.createBox(1f, 1f, 1f, new Material(ColorAttribute.createDiffuse(Color.WHITE),
+                ColorAttribute.createSpecular(Color.WHITE), FloatAttribute.createShininess(64f)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        disposables.add(boxModel);
+
+        // Add the constructors
+        world.addConstructor("ground", new BulletConstructor(groundModel, 0f)); // mass = 0: static body
+        world.addConstructor("box", new BulletConstructor(boxModel, 1f)); // mass = 1kg: dynamic body
+        world.addConstructor("staticbox", new BulletConstructor(boxModel, 0f)); // mass = 0: static body
     }
 
     @Override
     public void dispose() {
         world.dispose();
         world = null;
+
+        assets.dispose();
+        assets = null;
 
         for (Disposable disposable : disposables) {
             disposable.dispose();
@@ -147,7 +193,70 @@ public class BaseBulletTest extends BulletTest {
         world.update();
     }
 
+    protected btConvexHullShape createConvexHullShape (final Model model, boolean optimize, boolean needRotation) {
+        final Mesh meshOrigin = model.meshes.get(0);
+        Mesh mesh = meshOrigin.copy(true);
+        if (needRotation) {
+            mesh.transform(new Matrix4().rotate(Vector3.X, -90));
+        } else {
+            mesh = meshOrigin;
+        }
+        final btConvexHullShape shape = new btConvexHullShape(mesh.getVerticesBuffer(), mesh.getNumVertices(), mesh.getVertexSize());
+        if (!optimize) return shape;
+        // now optimize the shape
+        final btShapeHull hull = new btShapeHull(shape);
+        hull.buildHull(shape.getMargin());
+        final btConvexHullShape result = new btConvexHullShape(hull);
+        // delete the temporary shape
+        shape.dispose();
+        hull.dispose();
+        mesh.dispose();
+        return result;
+    }
+
+    public BulletEntity shoot (final float x, final float y) {
+        return shoot(x, y, 30f);
+    }
+
+    public BulletEntity shoot (final float x, final float y, final float impulse) {
+        return shoot("box", x, y, impulse);
+    }
+
+    public BulletEntity shoot (final String what, final float x, final float y, final float impulse) {
+        // Shoot a box
+        Ray ray = camera.getPickRay(x, y);
+        BulletEntity entity = world.add(what, ray.origin.x, ray.origin.y, ray.origin.z);
+        entity.setColor(0.5f + 0.5f * (float)Math.random(), 0.5f + 0.5f * (float)Math.random(), 0.5f + 0.5f * (float)Math.random(),
+                1f);
+        ((btRigidBody)entity.body).applyCentralImpulse(ray.direction.scl(impulse));
+        return entity;
+    }
+
     public void setDebugMode (final int mode) {
         world.setDebugMode(debugMode = mode);
+    }
+
+    public void toggleDebugMode () {
+        Gdx.app.log("Test", "toggle debug mode");
+        if (world.getDebugMode() == btIDebugDraw.DebugDrawModes.DBG_NoDebug) {
+            setDebugMode(btIDebugDraw.DebugDrawModes.DBG_DrawWireframe
+                    | btIDebugDraw.DebugDrawModes.DBG_DrawFeaturesText
+                    | btIDebugDraw.DebugDrawModes.DBG_DrawText
+                    | btIDebugDraw.DebugDrawModes.DBG_DrawContactPoints);
+        } else if (world.renderMeshes) {
+            world.renderMeshes = false;
+        } else {
+            world.renderMeshes = true;
+            setDebugMode(btIDebugDraw.DebugDrawModes.DBG_NoDebug);
+        }
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        if (keycode == Input.Keys.SPACE || keycode == Input.Keys.MENU) {
+            toggleDebugMode();
+            return  true;
+        }
+        return false;
     }
 }
