@@ -36,6 +36,7 @@ public class CharacterTest extends BaseBulletTest {
     Vector3 characterDirection = new Vector3();
     Vector3 walkDirection = new Vector3();
 
+    Vector3 tmpV = new Vector3();
     boolean loading;
 
     @Override
@@ -148,6 +149,15 @@ public class CharacterTest extends BaseBulletTest {
             walkDirection.scl(3f * Gdx.graphics.getDeltaTime());
             // And update the character controller
             characterController.setWalkDirection(walkDirection);
+
+            character.transform.getTranslation(camera.position);
+            tmpV.set(camera.position).sub(5, 0, 5).y = 0f;
+            camera.position.add(tmpV.nor().scl(-6f)).y = 4f;
+            character.transform.getTranslation(tmpV);
+            camera.lookAt(tmpV);
+            camera.up.set(Vector3.Y);
+            camera.update();
+
         }
         // Now we can update the world as normally
         super.update();
