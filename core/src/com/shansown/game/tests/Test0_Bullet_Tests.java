@@ -15,7 +15,7 @@ import com.shansown.game.tests.bullet.*;
 public class Test0_Bullet_Tests implements ApplicationListener, InputProcessor, GestureDetector.GestureListener {
 
     protected final BulletTest[] tests = {new BulletBasicTest(), new BulletMeshesTest(), new GimpactTest(),
-            new ConvexHullTest()};
+            new ConvexHullTest(), new CharacterTest()};
 
     protected int testIndex = 0;
 

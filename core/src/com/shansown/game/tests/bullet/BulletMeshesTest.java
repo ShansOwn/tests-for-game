@@ -74,7 +74,9 @@ public class BulletMeshesTest extends BaseBulletTest {
     @Override
     public void dispose() {
         super.dispose();
-        trexVertexArray.dispose();
+        if (trexVertexArray != null) {
+            trexVertexArray.dispose();
+        }
         trexVertexArray = null;
         ground = null;
     }

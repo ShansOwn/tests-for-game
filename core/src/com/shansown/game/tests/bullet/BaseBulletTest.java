@@ -210,7 +210,9 @@ public class BaseBulletTest extends BulletTest {
         // delete the temporary shape
         shape.dispose();
         hull.dispose();
-        mesh.dispose();
+        if (needRotation) {
+            mesh.dispose();
+        }
         return result;
     }
 
