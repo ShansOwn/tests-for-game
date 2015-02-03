@@ -1,10 +1,7 @@
 package com.shansown.game.tests.utils;
 
 import com.badlogic.gdx.ApplicationListener;
-import com.shansown.game.tests.Test0_Bullet_Tests;
-import com.shansown.game.tests.Test1_SceneLoading;
-import com.shansown.game.tests.Test2_Animation;
-import com.shansown.game.tests.Test3_TRex_Animation;
+import com.shansown.game.tests.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +15,8 @@ public class TestsList {
             Test0_Bullet_Tests.class,
             Test1_SceneLoading.class,
             Test2_Animation.class,
-            Test3_TRex_Animation.class
+            Test3_TRex_Animation.class,
+            Test4_Slingshot_Fight.class
     ));
 
     public static List<String> getNames () {
