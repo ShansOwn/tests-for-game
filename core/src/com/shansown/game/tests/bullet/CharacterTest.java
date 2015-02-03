@@ -54,6 +54,7 @@ public class CharacterTest extends BaseBulletTest {
 
     @Override
     public void create() {
+        Gdx.app.log("Test", "create");
         super.create();
 
         assets.load("data/Slingshot_guy2.g3db", Model.class);
@@ -84,6 +85,7 @@ public class CharacterTest extends BaseBulletTest {
     }
 
     private void doneLoading() {
+        Gdx.app.log("Test", "doneLoading");
         final Model characterModel = assets.get("data/Slingshot_guy2.g3db", Model.class);
 
         world.addConstructor("character", new BulletConstructor(characterModel, null));
@@ -148,6 +150,7 @@ public class CharacterTest extends BaseBulletTest {
 
             walkDirection.scl(3f * Gdx.graphics.getDeltaTime());
             // And update the character controller
+            Gdx.app.log("Test", "HERE!!!");
             characterController.setWalkDirection(walkDirection);
 
             character.transform.getTranslation(camera.position);
@@ -182,6 +185,7 @@ public class CharacterTest extends BaseBulletTest {
         ghostObject.dispose();
         ghostShape.dispose();
         ghostPairCallback.dispose();
+        character = null;
         ground = null;
     }
 
