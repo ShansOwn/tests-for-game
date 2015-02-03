@@ -112,6 +112,7 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 		for (int i = 0; i < entities.size; i++) {
 			btCollisionObject body = entities.get(i).body;
 			if (body != null) {
+				Gdx.app.log("Test", "BulletWorld body #"  + body.getUserValue() + " dispose");
 				if (body instanceof btRigidBody)
 					((btDynamicsWorld)collisionWorld).removeRigidBody((btRigidBody)body);
 				else

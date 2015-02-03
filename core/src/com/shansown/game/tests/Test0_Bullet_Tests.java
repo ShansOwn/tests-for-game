@@ -15,7 +15,7 @@ import com.shansown.game.tests.bullet.*;
 public class Test0_Bullet_Tests implements ApplicationListener, InputProcessor, GestureDetector.GestureListener {
 
     protected final BulletTest[] tests = {new BulletBasicTest(), new BulletMeshesTest(), new GimpactTest(),
-            new ConvexHullTest(), new CharacterTest()};
+            new ConvexHullTest(), new CharacterTest(), new RayPickTest()};
 
     protected int testIndex = 0;
 
@@ -67,6 +67,7 @@ public class Test0_Bullet_Tests implements ApplicationListener, InputProcessor, 
         checkTestNavigation();
 
         cameraController = new CameraInputController(tests[testIndex].camera);
+        cameraController.activateKey = Input.Keys.CONTROL_LEFT;
         Gdx.input.setInputProcessor(new InputMultiplexer(hud, cameraController, this, new GestureDetector(this)));
     }
 
