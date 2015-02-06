@@ -1,16 +1,18 @@
 package com.shansown.game.tests.slingshotfight;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.utils.Scaling;
 import com.shansown.game.tests.slingshotfight.reference.Models;
 import com.shansown.game.tests.slingshotfight.reference.Textures;
 
@@ -20,6 +22,7 @@ public class SplashScreen implements Screen {
     private Stage hud;
 
     private Image splashImage;
+    private Action splashAction;
     private boolean loaded = false, animationFinished = false;
 
     public SplashScreen(SlingshotFight game) {
@@ -29,6 +32,7 @@ public class SplashScreen implements Screen {
     @Override
     public void show() {
         loadAssets();
+        Bullet.init();
         hud = new Stage();
         splashImage = new Image(new Texture(Gdx.files.internal(Textures.SPLASH)));
         splashImage.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, Align.center);
@@ -39,28 +43,29 @@ public class SplashScreen implements Screen {
 
     private void loadAssets() {
         game.assets.load(Models.SLINGSHOT_GUY, Model.class);
+        game.assets.load(Models.ISLAND, Model.class);
     }
 
     private void addSplashAnimation() {
-        splashImage.addAction(
-                Actions.sequence(
-                        Actions.parallel(
-                                Actions.fadeOut(0),
-                                Actions.scaleTo(.1f, .1f)),
-                        Actions.parallel(
-                                Actions.fadeIn(1f),
-                                Actions.rotateTo(3 * 360, 1f),
-                                Actions.scaleTo(1f, 1f, 1f)),
-                        Actions.delay(.2f),
-                        Actions.scaleTo(.5f, .5f, .5f),
-                        Actions.delay(.2f),
-                        Actions.moveTo(0, Gdx.graphics.getHeight() / 2 - splashImage.getHeight() / 2, 1f, Interpolation.elasticOut),
-                        Actions.run(new Runnable() {
-                            @Override
-                            public void run() {
-                                animationFinished = true;
-                            }
-                        })));
+        splashAction =  Actions.sequence(
+                Actions.parallel(
+                        Actions.fadeOut(0),
+                        Actions.scaleTo(.1f, .1f)),
+                Actions.parallel(
+                        Actions.fadeIn(1f),
+                        Actions.rotateTo(3 * 360, 1f),
+                        Actions.scaleTo(1f, 1f, 1f)),
+                Actions.delay(.2f),
+                Actions.scaleTo(.5f, .5f, .5f),
+                Actions.delay(.2f),
+                Actions.moveTo(0, Gdx.graphics.getHeight() / 2 - splashImage.getHeight() / 2, 1f, Interpolation.elasticOut),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        animationFinished = true;
+                    }
+                }));
+        splashImage.addAction(splashAction);
     }
 
     @Override
@@ -69,6 +74,10 @@ public class SplashScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         drawHud();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
+            exitApp();
+        }
 
         if (!loaded && game.assets.update()) {
             loaded = true;
@@ -82,6 +91,13 @@ public class SplashScreen implements Screen {
     private void drawHud() {
         hud.act();
         hud.draw();
+    }
+
+    private void exitApp() {
+        if (splashAction != null && !animationFinished) {
+            splashImage.removeAction(splashAction);
+        }
+        Gdx.app.exit();
     }
 
     @Override

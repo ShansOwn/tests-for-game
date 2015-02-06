@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-package com.shansown.game.tests.bullet;
+package com.shansown.game.tests.slingshotfight.world.bullet;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -24,10 +24,16 @@ import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.PerformanceCounter;
 
 /** @author xoppa Bullet physics world that holds all bullet entities and constructors. */
 public class BulletWorld extends BaseWorld<BulletEntity> {
+
+	private static final String TAG = "BulletWorld";
+
+	protected static final int ptrs[] = new int[512];
+
 	public DebugDrawer debugDrawer = null;
 	public boolean renderMeshes = true;
 
@@ -42,9 +48,8 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 	public int maxSubSteps = 5;
 	public float fixedTimeStep = 1f / 60f;
 
-	public BulletWorld(final btCollisionConfiguration collisionConfiguration, final btCollisionDispatcher dispatcher,
-					   final btBroadphaseInterface broadphase, final btConstraintSolver solver,
-					   final btCollisionWorld world, final Vector3 gravity) {
+	public BulletWorld (final btCollisionConfiguration collisionConfiguration, final btCollisionDispatcher dispatcher,
+		final btBroadphaseInterface broadphase, final btConstraintSolver solver, final btCollisionWorld world, final Vector3 gravity) {
 		this.collisionConfiguration = collisionConfiguration;
 		this.dispatcher = dispatcher;
 		this.broadphase = broadphase;
@@ -54,12 +59,12 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 		this.gravity = gravity;
 	}
 
-	public BulletWorld(final btCollisionConfiguration collisionConfiguration, final btCollisionDispatcher dispatcher,
-					   final btBroadphaseInterface broadphase, final btConstraintSolver solver, final btCollisionWorld world) {
+	public BulletWorld (final btCollisionConfiguration collisionConfiguration, final btCollisionDispatcher dispatcher,
+		final btBroadphaseInterface broadphase, final btConstraintSolver solver, final btCollisionWorld world) {
 		this(collisionConfiguration, dispatcher, broadphase, solver, world, new Vector3(0, -10, 0));
 	}
 
-	public BulletWorld(final Vector3 gravity) {
+	public BulletWorld (final Vector3 gravity) {
 		collisionConfiguration = new btDefaultCollisionConfiguration();
 		dispatcher = new btCollisionDispatcher(collisionConfiguration);
 		broadphase = new btDbvtBroadphase();
@@ -69,7 +74,7 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 		this.gravity = gravity;
 	}
 
-	public BulletWorld() {
+	public BulletWorld () {
 		this(new Vector3(0, -10, 0));
 	}
 
@@ -84,6 +89,17 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 			// Store the index of the entity in the collision object.
 			entity.body.setUserValue(entities.size - 1);
 		}
+	}
+
+	@Override
+	public void remove(BulletEntity entity, boolean identity) {
+		super.remove(entity, identity);
+		if (entity.body instanceof btRigidBody) {
+			((btDynamicsWorld) collisionWorld).removeRigidBody((btRigidBody) entity.body);
+		} else {
+			collisionWorld.removeCollisionObject(entity.body);
+		}
+		entity.dispose();
 	}
 
 	@Override
@@ -113,7 +129,6 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 		for (int i = 0; i < entities.size; i++) {
 			btCollisionObject body = entities.get(i).body;
 			if (body != null) {
-				Gdx.app.log("Test", "BulletWorld body #"  + body.getUserValue() + " dispose");
 				if (body instanceof btRigidBody)
 					((btDynamicsWorld)collisionWorld).removeRigidBody((btRigidBody)body);
 				else
@@ -129,6 +144,22 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 		if (dispatcher != null) dispatcher.dispose();
 		if (collisionConfiguration != null) collisionConfiguration.dispose();
 	}
+
+	public Array<BulletEntity> getEntitiesCollidingWithObject (final btCollisionObject object, final Array<BulletEntity> out) {
+		// Fetch the array of contacts
+		btBroadphasePairArray arr = broadphase.getOverlappingPairCache().getOverlappingPairArray();
+		// Get the user values (which are indices in the entities array) of all objects colliding with the object
+		final int n = arr.getCollisionObjectsValue(ptrs, object);
+		// Fill the array of entities
+		out.clear();
+		Gdx.app.log("Test", "entities: " + entities.size);
+		Gdx.app.log("Test", "collisions objects: " + n);
+		for (int i = 0; i < n; i++) {
+			out.add(entities.get(ptrs[i]));
+		}
+		return out;
+	}
+
 
 	public void setDebugMode (final int mode) {
 		if (mode == btIDebugDraw.DebugDrawModes.DBG_NoDebug && debugDrawer == null) return;
