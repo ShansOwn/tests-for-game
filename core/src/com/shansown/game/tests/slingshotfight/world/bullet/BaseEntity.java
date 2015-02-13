@@ -27,6 +27,7 @@ import com.badlogic.gdx.utils.Disposable;
 public abstract class BaseEntity implements Disposable {
 	public Matrix4 transform;
 	public ModelInstance modelInstance;
+	public float visibleRadius = 1f;
 	private Color color = new Color(1f, 1f, 1f, 1f);
 
 	public Color getColor () {

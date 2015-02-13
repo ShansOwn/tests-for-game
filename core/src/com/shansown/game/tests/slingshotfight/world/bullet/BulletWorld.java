@@ -17,8 +17,11 @@
 package com.shansown.game.tests.slingshotfight.world.bullet;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
@@ -92,6 +95,19 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 	}
 
 	@Override
+	public void add (final BulletEntity entity, short group, short mask) {
+		super.add(entity);
+		if (entity.body != null) {
+			if (entity.body instanceof btRigidBody)
+				((btDiscreteDynamicsWorld)collisionWorld).addRigidBody((btRigidBody)entity.body, group, mask);
+			else
+				collisionWorld.addCollisionObject(entity.body, group, mask);
+			// Store the index of the entity in the collision object.
+			entity.body.setUserValue(entities.size - 1);
+		}
+	}
+
+	@Override
 	public void remove(BulletEntity entity, boolean identity) {
 		super.remove(entity, identity);
 		if (entity.body instanceof btRigidBody) {
@@ -103,13 +119,13 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 	}
 
 	@Override
-	public void update () {
+	public void update (float delta) {
 		if (performanceCounter != null) {
 			performanceCounter.tick();
 			performanceCounter.start();
 		}
 		if (collisionWorld instanceof btDynamicsWorld)
-			((btDynamicsWorld)collisionWorld).stepSimulation(Gdx.graphics.getDeltaTime(), maxSubSteps, fixedTimeStep);
+			((btDynamicsWorld)collisionWorld).stepSimulation(delta, maxSubSteps, fixedTimeStep);
 		if (performanceCounter != null) performanceCounter.stop();
 	}
 
@@ -152,14 +168,13 @@ public class BulletWorld extends BaseWorld<BulletEntity> {
 		final int n = arr.getCollisionObjectsValue(ptrs, object);
 		// Fill the array of entities
 		out.clear();
-		Gdx.app.log("Test", "entities: " + entities.size);
-		Gdx.app.log("Test", "collisions objects: " + n);
+		Gdx.app.log(TAG, "entities: " + entities.size);
+		Gdx.app.log(TAG, "collisions objects: " + n);
 		for (int i = 0; i < n; i++) {
 			out.add(entities.get(ptrs[i]));
 		}
 		return out;
 	}
-
 
 	public void setDebugMode (final int mode) {
 		if (mode == btIDebugDraw.DebugDrawModes.DBG_NoDebug && debugDrawer == null) return;

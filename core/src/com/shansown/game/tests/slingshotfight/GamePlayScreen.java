@@ -22,7 +22,6 @@ import com.shansown.game.tests.slingshotfight.world.environment.EnvironmentCreat
 
 public class GamePlayScreen implements Screen, GestureDetector.GestureListener, InputProcessor {
 
-    public static boolean shadows = false;
     public static boolean debug = true;
 
     private SlingshotFight game;
@@ -42,12 +41,14 @@ public class GamePlayScreen implements Screen, GestureDetector.GestureListener, 
     @Override
     public void show() {
         initScene();
-        Gdx.input.setInputProcessor(new InputMultiplexer(this, new GestureDetector(this), new CameraInputController(world.camera)));
+        CameraInputController cameraController = new CameraInputController(world.camera);
+        cameraController.activateKey = Input.Keys.CONTROL_LEFT;
+        Gdx.input.setInputProcessor(new InputMultiplexer(this, new GestureDetector(this), cameraController));
         initHud();
     }
 
     private void initScene() {
-        world = GameWorld.createWorld(game, true);
+        world = GameWorld.createWorld(game, false);
     }
 
     private void initHud() {
@@ -83,8 +84,7 @@ public class GamePlayScreen implements Screen, GestureDetector.GestureListener, 
 
     @Override
     public boolean tap (float x, float y, int count, int button) {
-//        world.tap(x, y, count, button);
-        return true;
+        return false;
     }
 
     @Override
@@ -125,7 +125,7 @@ public class GamePlayScreen implements Screen, GestureDetector.GestureListener, 
 
 
     private void updateWorld(float delta) {
-        world.update();
+        world.update(delta);
     }
 
     private void renderWorld () {

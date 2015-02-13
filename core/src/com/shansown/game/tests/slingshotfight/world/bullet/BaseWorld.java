@@ -63,6 +63,22 @@ public class BaseWorld<T extends BaseEntity> implements Disposable {
 		return entity;
 	}
 
+	public void add (final T entity, short group, short mask) {
+		entities.add(entity);
+	}
+
+	public T add (final String type, float x, float y, float z, short group, short mask) {
+		final T entity = constructors.get(type).construct(x, y, z);
+		add(entity, group, mask);
+		return entity;
+	}
+
+	public T add (final String type, final Matrix4 transform, short group, short mask) {
+		final T entity = constructors.get(type).construct(transform);
+		add(entity, group, mask);
+		return entity;
+	}
+
 	public void remove(final T entity, boolean identity) {
 		entities.removeValue(entity, identity);
 	}
@@ -81,7 +97,7 @@ public class BaseWorld<T extends BaseEntity> implements Disposable {
 		batch.render(entity.modelInstance, lights);
 	}
 
-	public void update () {
+	public void update (float delta) {
 	}
 
 	@Override
