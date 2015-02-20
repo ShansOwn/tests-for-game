@@ -16,7 +16,8 @@ public class TestsList {
             Test1_SceneLoading.class,
             Test2_Animation.class,
             Test3_TRex_Animation.class,
-            Test4_Slingshot_Fight.class
+            Test4_Slingshot_Fight.class,
+            Test5_Ashley_Test.class
     ));
 
     public static List<String> getNames () {
