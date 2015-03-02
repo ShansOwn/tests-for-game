@@ -21,7 +21,7 @@ import com.shansown.game.tests.ashley.components.TransformComponent;
 
 public class RenderSystem extends IteratingSystem {
 
-    private static final String TAG = "GameWorld";
+    private static final String TAG = RenderSystem.class.getSimpleName();
 
     private static final boolean SHADOWS = false;
 
@@ -133,6 +133,7 @@ public class RenderSystem extends IteratingSystem {
     }
 
     public void dispose() {
+        Gdx.app.log(TAG, "dispose");
         modelBatch.dispose();
         spriteBatch.dispose();
     }

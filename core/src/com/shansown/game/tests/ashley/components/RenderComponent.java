@@ -1,12 +1,17 @@
 package com.shansown.game.tests.ashley.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.utils.Pool;
 
-public class RenderComponent extends Component {
+public class RenderComponent extends Component implements Pool.Poolable {
+
+    private static final String TAG = RenderComponent.class.getSimpleName();
+
     private final Color tmpC = new Color();
 
     public float visibleRadius = 1f;
@@ -24,5 +29,12 @@ public class RenderComponent extends Component {
                 if (ca != null) ca.color.set(r, g, b, a);
             }
         }
+    }
+
+    @Override
+    public void reset() {
+        Gdx.app.log(TAG, "reset!");
+        visibleRadius = 1f;
+        modelInstance = null;
     }
 }

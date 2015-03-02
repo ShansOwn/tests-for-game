@@ -1,5 +1,6 @@
 package com.shansown.game.tests.ashley.systems;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
@@ -11,12 +12,20 @@ import com.shansown.game.tests.ashley.components.TransformComponent;
 
 public class ShotStoneSystem extends IteratingSystem {
 
-    private static final String TAG = "ShotStoneSystem";
+    private static final String TAG = ShotStoneSystem.class.getSimpleName();
 
     private final Vector3 tmpV = new Vector3();
 
+    private Engine engine;
+
     public ShotStoneSystem(int priority) {
         super(Family.getFor(ShotStoneComponent.class), priority);
+    }
+
+    @Override
+    public void addedToEngine(Engine engine) {
+        super.addedToEngine(engine);
+        this.engine = engine;
     }
 
     @Override
@@ -32,8 +41,9 @@ public class ShotStoneSystem extends IteratingSystem {
             case SAFE:
                 shotStone.safeTime += deltaTime;
                 if (shotStone.safeTime >= ShotStoneComponent.SAFE_VISIBLE_TIME) {
-                    shotStone.state = ShotStoneComponent.State.IDLE;
-                    shotStone.safeTime = 0;
+                    /*shotStone.state = ShotStoneComponent.State.IDLE;
+                    shotStone.safeTime = 0;*/
+                    engine.getSystem(WorldSystem.class).freeEntity(entity);
                 }
                 break;
         }

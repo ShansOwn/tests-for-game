@@ -1,8 +1,12 @@
 package com.shansown.game.tests.ashley.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.Pool;
 
-public class GuyComponent extends Component {
+public class GuyComponent extends Component implements Pool.Poolable {
+
+    private static final String TAG = GuyComponent.class.getSimpleName();
 
     public static final float BBOX_CAPSULE_RADIUS = .4f;
     public static final float BBOX_CAPSULE_HEIGHT = 1f;
@@ -22,5 +26,13 @@ public class GuyComponent extends Component {
 
     public enum State {
         IDLE, STRING, SHOOT, DAMAGE, DEAD
+    }
+
+    @Override
+    public void reset() {
+        Gdx.app.log(TAG, "reset!");
+        state = State.DEAD;
+        stringTime = 0f;
+        damageTime = 0f;
     }
 }

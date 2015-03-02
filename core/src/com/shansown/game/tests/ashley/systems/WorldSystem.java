@@ -3,19 +3,11 @@ package com.shansown.game.tests.ashley.systems;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
@@ -24,8 +16,10 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.PerformanceCounter;
 import com.shansown.game.tests.ashley.AshleyGame;
 import com.shansown.game.tests.ashley.Mappers;
+import com.shansown.game.tests.ashley.creators.GuyCreator;
 import com.shansown.game.tests.ashley.components.*;
-import com.shansown.game.tests.ashley.reference.Models;
+import com.shansown.game.tests.ashley.creators.IslandCreator;
+import com.shansown.game.tests.ashley.creators.ShotStoneCreator;
 
 public class WorldSystem extends EntitySystem {
 
@@ -38,6 +32,9 @@ public class WorldSystem extends EntitySystem {
     public static final short STONE_FLAG = 1<<12;
     public static final short ISLAND_FLAG = 1<<11;
 
+    public static final Vector3 OUT_WORLD_V = new Vector3(100, 100, 100);
+    public static final Matrix4 OUT_WORLD_M = new Matrix4().translate(OUT_WORLD_V);
+
     private Array<Disposable> disposables = new Array<>();
     private ModelBuilder modelBuilder = new ModelBuilder();
 
@@ -45,11 +42,15 @@ public class WorldSystem extends EntitySystem {
     private final Matrix4 tmpM = new Matrix4();
 
     private AshleyGame game;
-    private Engine engine;
+    private PooledEngine engine;
 
-    public PerformanceCounter performanceCounter;
+    private ShotStoneCreator shotStoneCreator;
+    private GuyCreator guyCreator;
+    private IslandCreator islandCreator;
 
-    private int maxSubSteps = 10;
+    private PerformanceCounter performanceCounter;
+
+    private int maxSubSteps = 5;
     private float fixedTimeStep = 1f / 300f;
 
     private final btCollisionConfiguration collisionConfiguration;
@@ -63,6 +64,7 @@ public class WorldSystem extends EntitySystem {
     private WorldContactListener contactListener;
 
     public WorldSystem(int priority, AshleyGame game) {
+        super(priority);
         this.game = game;
 
         collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -81,212 +83,71 @@ public class WorldSystem extends EntitySystem {
     @Override
     public void addedToEngine(Engine engine) {
         super.addedToEngine(engine);
-        this.engine = engine;
+        this.engine = (PooledEngine) engine;
     }
 
     public void createWorld() {
+        initWorldCreators();
         createIsland(tmpV.setZero());
         createPlayerEntities();
         createEnemyEntities();
     }
 
+    private void initWorldCreators() {
+        shotStoneCreator = new ShotStoneCreator(modelBuilder, engine);
+        disposables.add(shotStoneCreator);
+
+        guyCreator = new GuyCreator(game.assets, engine);
+        disposables.add(guyCreator);
+
+        islandCreator = new IslandCreator(game.assets, engine);
+        disposables.add(islandCreator);
+    }
+
     private Entity createIsland(Vector3 position) {
-        Entity entity = new Entity();
-
-        Model model = game.assets.get(Models.ISLAND, Model.class);
-        ModelInstance modelInstance = new ModelInstance(model, position);
-        btCollisionShape shape = Bullet.obtainStaticNodeShape(model.nodes);
-
-        RenderComponent render = new RenderComponent();
-        render.modelInstance = modelInstance;
-
-        TransformComponent transform = new TransformComponent();
-        transform.transform = modelInstance.transform;
-        transform.transform.rotate(Vector3.Y, 30);
-
-        StaticComponent statics = new StaticComponent();
-        statics.object.userData = entity;
-        statics.object.setCollisionShape(shape);
-        statics.object.setWorldTransform(modelInstance.transform);
-        statics.object.setFriction(10);
-        statics.object.setContactCallbackFlag(ISLAND_FLAG);
-        statics.object.setContactCallbackFilter(0);
-
-        addCollisionObject(statics.object);
-
-        entity.add(render);
-        entity.add(transform);
-        entity.add(statics);
-
-        engine.addEntity(entity);
-        return entity;
+        return islandCreator.obtain(position);
     }
 
     private void createPlayerEntities() {
         tmpM.idt();
         getTerrainY(tmpV.set(6, 0, 3));
         tmpM.rotate(Vector3.Y, 90).setTranslation(tmpV);
-        createGuy(tmpM, true);
+        obtainGuy(tmpM, true);
 
         tmpM.idt();
         getTerrainY(tmpV.set(7, 0, -1));
         tmpM.rotate(Vector3.Y, 90).setTranslation(tmpV);
-        createGuy(tmpM, true);
+        obtainGuy(tmpM, true);
 
         tmpM.idt();
         getTerrainY(tmpV.set(6, 0, -5));
         tmpM.rotate(Vector3.Y, 90).setTranslation(tmpV);
-        createGuy(tmpM, true);
+        obtainGuy(tmpM, true);
     }
 
     private void createEnemyEntities() {
         tmpM.idt();
         getTerrainY(tmpV.set(-6, 0, 3));
         tmpM.rotate(Vector3.Y, -90).setTranslation(tmpV);
-        createGuy(tmpM, false);
+        obtainGuy(tmpM, false);
 
         tmpM.idt();
         getTerrainY(tmpV.set(-7, 0, -1));
         tmpM.rotate(Vector3.Y, -90).setTranslation(tmpV);
-        createGuy(tmpM, false);
+        obtainGuy(tmpM, false);
 
         tmpM.idt();
         getTerrainY(tmpV.set(-6, 0, -5));
         tmpM.rotate(Vector3.Y, -90).setTranslation(tmpV);
-        createGuy(tmpM, false);
+        obtainGuy(tmpM, false);
     }
 
-    private Entity createGuy(Matrix4 position, boolean isPlayer) {
-        position.trn(0, GuyComponent.OFFSET_Y, 0);
-        Entity entity = new Entity();
-
-        Model model = game.assets.get(Models.SLINGSHOT_GUY, Model.class);
-        ModelInstance modelInstance = new ModelInstance(model, position.cpy());
-        btCapsuleShape shape = new btCapsuleShape(GuyComponent.BBOX_CAPSULE_RADIUS, GuyComponent.BBOX_CAPSULE_HEIGHT);
-        btRigidBody.btRigidBodyConstructionInfo bodyInfo = new btRigidBody.btRigidBodyConstructionInfo(GuyComponent.MASS, null, shape, Vector3.Zero);
-
-        RenderComponent render = new RenderComponent();
-        render.modelInstance = modelInstance;
-        render.visibleRadius = GuyComponent.VISIBLE_RADIUS;
-
-        TransformComponent transform = new TransformComponent();
-        transform.transform = modelInstance.transform;
-
-        KinematicComponent kinematic = new KinematicComponent();
-        kinematic.body = new btRigidBody(bodyInfo);
-        kinematic.body.setWorldTransform(transform.transform);
-        kinematic.body.userData = entity;
-
-        int collisionFlags = kinematic.body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT;
-        if (isPlayer) {
-            collisionFlags |= PLAYER_FLAG;
-        } else {
-            collisionFlags |= ENEMY_FLAG;
-        }
-        kinematic.body.setCollisionFlags(collisionFlags);
-
-        InputControlComponent inputControl = new InputControlComponent();
-        inputControl.canPick = isPlayer;
-
-        GuyComponent guy = new GuyComponent();
-        guy.isPlayer = isPlayer;
-
-        short collisionFilterGroup;
-        short collisionFilterMask = ALL_FLAGS;
-
-        if (isPlayer) {
-            collisionFilterGroup = PLAYER_FLAG;
-        } else {
-            collisionFilterGroup = ENEMY_FLAG;
-        }
-
-        addRigidBody(kinematic.body, collisionFilterGroup, collisionFilterMask);
-
-        entity.add(render)
-                .add(transform)
-                .add(kinematic)
-                .add(inputControl)
-                .add(guy);
-
-        engine.addEntity(entity);
-        return entity;
+    private Entity obtainGuy(Matrix4 transform, boolean isPlayer) {
+        return guyCreator.obtain(transform, isPlayer);
     }
 
     public Entity obtainShotStone(Vector3 position, boolean forPlayer) {
-        return createShotStone(position, forPlayer);
-
-
-//        ShotStone shotStone = shotStonesPool.obtain();
-//        shotStone.init(position, forPlayer);
-//        activeShotStones.add(shotStone);
-    }
-
-    private Entity createShotStone(Vector3 position, boolean forPlayer) {
-        Entity entity = new Entity();
-
-        final Model model = modelBuilder.createSphere(ShotStoneComponent.BBOX_SPHERE_RADIUS,
-                ShotStoneComponent.BBOX_SPHERE_RADIUS,
-                ShotStoneComponent.BBOX_SPHERE_RADIUS,
-                5, 5, new Material(ColorAttribute.createDiffuse(Color.WHITE),
-                        ColorAttribute.createSpecular(Color.WHITE), FloatAttribute.createShininess(64f)),
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-
-        ModelInstance modelInstance = new ModelInstance(model, position);
-        final BoundingBox boundingBox = new BoundingBox();
-        model.calculateBoundingBox(boundingBox);
-        Vector3 dimensions = new Vector3();
-        boundingBox.getDimensions(dimensions);
-        btBoxShape shape = new btBoxShape(tmpV.set(dimensions.x * 0.5f, dimensions.y * 0.5f, dimensions.z * 0.5f));
-        shape.calculateLocalInertia(ShotStoneComponent.MASS, tmpV);
-        Vector3 localInertia = tmpV;
-        btRigidBody.btRigidBodyConstructionInfo bodyInfo =
-                new btRigidBody.btRigidBodyConstructionInfo(ShotStoneComponent.MASS, null, shape, localInertia);
-
-        ShotStoneComponent shotStone = new ShotStoneComponent();
-        shotStone.state = ShotStoneComponent.State.DANGEROUS;
-
-        RenderComponent render = new RenderComponent();
-        render.modelInstance = modelInstance;
-        render.visibleRadius = ShotStoneComponent.VISIBLE_RADIUS;
-        render.setColor(0.5f + 0.5f * (float) Math.random(), 0.5f + 0.5f * (float) Math.random(),
-                0.5f + 0.5f * (float) Math.random(), 1f);
-
-        TransformComponent transform = new TransformComponent();
-        transform.transform = modelInstance.transform;
-
-        DynamicComponent dynamic = new DynamicComponent();
-        dynamic.body = new btRigidBody(bodyInfo);
-        dynamic.body.setWorldTransform(transform.transform);
-        dynamic.body.userData = entity;
-
-        short group = forPlayer ? PLAYER_FLAG : ENEMY_FLAG;
-        group |= STONE_FLAG;
-        short mask = forPlayer ? PLAYER_FLAG :  ENEMY_FLAG;
-        mask ^= ALL_FLAGS;
-
-        dynamic.body.setCollisionFlags(btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-
-
-        dynamic.body.setContactCallbackFlag(group);
-        dynamic.body.setContactCallbackFilter(mask);
-
-        /*transform.setTranslation(position);
-        body.setWorldTransform(transform);
-        body.setCollisionFlags(btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-        body.activate();*/
-
-        addRigidBody(dynamic.body, group, mask);
-
-//        dynamic.body.getBroadphaseHandle().setCollisionFilterGroup(group);
-//        dynamic.body.getBroadphaseHandle().setCollisionFilterMask(mask);
-
-        entity.add(shotStone)
-                .add(render)
-                .add(transform)
-                .add(dynamic);
-
-        engine.addEntity(entity);
-        return entity;
+        return shotStoneCreator.obtain(position, forPlayer);
     }
 
     public Vector3 getTerrainY(Vector3 out) {
@@ -319,19 +180,19 @@ public class WorldSystem extends EntitySystem {
         return performanceCounter;
     }
 
-    private void addCollisionObject(btCollisionObject object) {
+    public void addCollisionObject(btCollisionObject object) {
         dynamicsWorld.addCollisionObject(object);
     }
 
-    private void addCollisionObject(btCollisionObject object, short group, short mask) {
+    public void addCollisionObject(btCollisionObject object, short group, short mask) {
         dynamicsWorld.addCollisionObject(object, group, mask);
     }
 
-    private void addRigidBody(btRigidBody body) {
+    public void addRigidBody(btRigidBody body) {
         dynamicsWorld.addRigidBody(body);
     }
 
-    private void addRigidBody(btRigidBody body, short group, short mask) {
+    public void addRigidBody(btRigidBody body, short group, short mask) {
         dynamicsWorld.addRigidBody(body, group, mask);
     }
 
@@ -364,6 +225,12 @@ public class WorldSystem extends EntitySystem {
         dynamicsWorld.debugDrawWorld();
     }
 
+    public void freeEntity(Entity entity) {
+        if (Mappers.shotStone.has(entity)) {
+            shotStoneCreator.free(entity);
+        }
+    }
+
     @Override
     public void update(float deltaTime) {
         super.update(deltaTime);
@@ -376,6 +243,7 @@ public class WorldSystem extends EntitySystem {
     }
 
     public void dispose() {
+        Gdx.app.log(TAG, "dispose");
         for (Disposable disposable : disposables) {
             disposable.dispose();
         }

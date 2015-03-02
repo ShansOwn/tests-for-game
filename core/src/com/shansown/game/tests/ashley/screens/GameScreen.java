@@ -1,6 +1,6 @@
 package com.shansown.game.tests.ashley.screens;
 
-import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,12 +17,12 @@ import com.shansown.game.tests.ashley.systems.*;
 
 public class GameScreen implements Screen {
 
-    private static final String TAG = "GameScreen";
+    private static final String TAG = GameScreen.class.getSimpleName();
 
     private AshleyGame game;
     private PerspectiveCamera camera;
 
-    private Engine engine;
+    private PooledEngine engine;
 
     private Stage hud;
     private Label fpsLabel;
@@ -71,14 +71,14 @@ public class GameScreen implements Screen {
     }
 
     private void initEngine() {
-        engine = new Engine();
+        engine = new PooledEngine();
 
         WorldSystem worldSystem = new WorldSystem(10, game);
         performanceCounter = worldSystem.initPerformanceCounter();
 
         InputSystem inputSystem = new InputSystem(1, camera);
-        ShotStoneSystem shotStoneSystem = new ShotStoneSystem(30);
-        GuySystem guySystem = new GuySystem(40);
+        GuySystem guySystem = new GuySystem(30);
+        ShotStoneSystem shotStoneSystem = new ShotStoneSystem(40);
         KinematicSystem kinematicSystem = new KinematicSystem(50);
         RenderSystem renderSystem = new RenderSystem(50, camera);
         DynamicSystem dynamicSystem = new DynamicSystem(20);
@@ -87,8 +87,8 @@ public class GameScreen implements Screen {
         engine.addSystem(worldSystem);      // priority - 10
         engine.addSystem(inputSystem);      // priority - 1
         engine.addSystem(dynamicSystem);    // priority - 20
-        engine.addSystem(shotStoneSystem);  // priority - 30
-        engine.addSystem(guySystem);        // priority - 40
+        engine.addSystem(guySystem);        // priority - 30
+        engine.addSystem(shotStoneSystem);  // priority - 40
         engine.addSystem(kinematicSystem);  // priority - 50
         engine.addSystem(renderSystem);     // priority - 60
 
@@ -151,7 +151,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        Gdx.app.log(TAG, "dispose");
         hud.dispose();
+        engine.removeAllEntities();
+        engine.clearPools();
         engine.getSystem(WorldSystem.class).dispose();
         engine.getSystem(RenderSystem.class).dispose();
     }

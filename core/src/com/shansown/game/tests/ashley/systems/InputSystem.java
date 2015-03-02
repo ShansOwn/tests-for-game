@@ -15,7 +15,7 @@ import com.shansown.game.tests.ashley.components.KinematicComponent;
 
 public class InputSystem extends EntitySystem implements InputProcessor {
 
-    private static final String TAG = "InputSystem";
+    private static final String TAG = InputSystem.class.getSimpleName();
 
     private final Vector3 tmpV = new Vector3();
     private Ray pickRay;

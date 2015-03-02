@@ -16,7 +16,7 @@ import com.shansown.game.tests.slingshotfight.world.GameWorld;
 
 public class GuySystem extends IteratingSystem {
 
-    private static final String TAG = "GuySystem";
+    private static final String TAG = GuySystem.class.getSimpleName();
 
     private final Vector3 tmpV = new Vector3();
     private final Vector3 tmpV2 = new Vector3();

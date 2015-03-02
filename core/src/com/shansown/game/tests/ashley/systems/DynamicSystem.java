@@ -8,7 +8,7 @@ import com.shansown.game.tests.ashley.components.TransformComponent;
 
 public class DynamicSystem extends IteratingSystem {
 
-    private static final String TAG = "RigidBodySystem";
+    private static final String TAG = DynamicSystem.class.getSimpleName();
 
     public DynamicSystem(int priority) {
         super(Family.getFor(DynamicComponent.class, TransformComponent.class), priority);
