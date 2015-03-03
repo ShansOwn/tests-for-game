@@ -49,6 +49,7 @@ public class GamePlayScreen implements Screen, GestureDetector.GestureListener, 
 
     private void initScene() {
         world = GameWorld.createWorld(game, false);
+        world.performanceCounter = performanceCounter;
     }
 
     private void initHud() {
