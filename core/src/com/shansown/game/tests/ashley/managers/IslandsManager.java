@@ -1,4 +1,4 @@
-package com.shansown.game.tests.ashley.creators;
+package com.shansown.game.tests.ashley.managers;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
@@ -15,15 +15,17 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 import com.shansown.game.tests.ashley.Mappers;
 import com.shansown.game.tests.ashley.components.*;
+import com.shansown.game.tests.ashley.components.graphics.RenderComponent;
+import com.shansown.game.tests.ashley.components.physics.StaticComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 import com.shansown.game.tests.ashley.systems.WorldSystem;
 import com.shansown.game.tests.slingshotfight.reference.Models;
 
-public class IslandCreator implements Disposable {
+public class IslandsManager extends Manager implements Disposable {
 
-    private static final String TAG = IslandCreator.class.getSimpleName();
+    private static final String TAG = IslandsManager.class.getSimpleName();
 
     private Model model;
-    private PooledEngine engine;
 
     private Array<Disposable> disposables = new Array<>();
 
@@ -35,8 +37,8 @@ public class IslandCreator implements Disposable {
         }
     };
 
-    public IslandCreator(AssetManager assets, PooledEngine engine) {
-        this.engine = engine;
+    public IslandsManager(AssetManager assets, PooledEngine engine) {
+        super(engine);
         // Model loaded from assets, so we shouldn't dispose it manually
         model = assets.get(Models.ISLAND, Model.class);
         collisionShape = Bullet.obtainStaticNodeShape(model.nodes);
@@ -47,7 +49,7 @@ public class IslandCreator implements Disposable {
         ModelInstance modelInstance = new ModelInstance(model, position);
 
         IslandComponent island = obtainIslandComponent();
-        RenderComponent render = obtainRenderComponent(modelInstance);
+        RenderComponent render = obtainRenderComponent(modelInstance, IslandComponent.VISIBLE_RADIUS);
         TransformComponent transform = obtainTransformComponent(modelInstance);
         StaticComponent statics = obtainStaticComponent(entity, modelInstance);
 
@@ -69,20 +71,6 @@ public class IslandCreator implements Disposable {
 
     private IslandComponent obtainIslandComponent() {
         return engine.createComponent(IslandComponent.class);
-    }
-
-    private RenderComponent obtainRenderComponent(ModelInstance modelInstance) {
-        RenderComponent render = engine.createComponent(RenderComponent.class);
-        render.modelInstance = modelInstance;
-        render.visibleRadius = IslandComponent.VISIBLE_RADIUS;
-        return render;
-    }
-
-    private TransformComponent obtainTransformComponent(ModelInstance modelInstance) {
-        TransformComponent transform = engine.createComponent(TransformComponent.class);
-        transform.transform = modelInstance.transform;
-        transform.transform.rotate(Vector3.Y, 30);
-        return transform;
     }
 
     private StaticComponent obtainStaticComponent(Entity entity, ModelInstance modelInstance) {

@@ -9,9 +9,9 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.shansown.game.tests.ashley.Mappers;
 import com.shansown.game.tests.ashley.components.GuyComponent;
-import com.shansown.game.tests.ashley.components.KinematicComponent;
-import com.shansown.game.tests.ashley.components.RenderComponent;
-import com.shansown.game.tests.ashley.components.TransformComponent;
+import com.shansown.game.tests.ashley.components.physics.KinematicComponent;
+import com.shansown.game.tests.ashley.components.graphics.RenderComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 import com.shansown.game.tests.slingshotfight.world.GameWorld;
 
 public class GuySystem extends IteratingSystem {
@@ -24,7 +24,7 @@ public class GuySystem extends IteratingSystem {
     private WorldSystem world;
 
     public GuySystem(int priority) {
-        super(Family.getFor(GuyComponent.class, KinematicComponent.class), priority);
+        super(Family.all(GuyComponent.class, KinematicComponent.class).get(), priority);
     }
 
     @Override

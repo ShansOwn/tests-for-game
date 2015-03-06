@@ -2,6 +2,11 @@ package com.shansown.game.tests.ashley;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.shansown.game.tests.ashley.components.*;
+import com.shansown.game.tests.ashley.components.graphics.RenderComponent;
+import com.shansown.game.tests.ashley.components.physics.DynamicComponent;
+import com.shansown.game.tests.ashley.components.physics.KinematicComponent;
+import com.shansown.game.tests.ashley.components.physics.StaticComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 
 public class Mappers {
     public static final ComponentMapper<IslandComponent> island = ComponentMapper.getFor(IslandComponent.class);

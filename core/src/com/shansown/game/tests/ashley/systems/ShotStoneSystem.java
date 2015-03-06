@@ -6,9 +6,9 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Vector3;
 import com.shansown.game.tests.ashley.Mappers;
-import com.shansown.game.tests.ashley.components.DynamicComponent;
+import com.shansown.game.tests.ashley.components.physics.DynamicComponent;
 import com.shansown.game.tests.ashley.components.ShotStoneComponent;
-import com.shansown.game.tests.ashley.components.TransformComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 
 public class ShotStoneSystem extends IteratingSystem {
 
@@ -19,7 +19,7 @@ public class ShotStoneSystem extends IteratingSystem {
     private Engine engine;
 
     public ShotStoneSystem(int priority) {
-        super(Family.getFor(ShotStoneComponent.class), priority);
+        super(Family.all(ShotStoneComponent.class).get(), priority);
     }
 
     @Override
@@ -41,8 +41,6 @@ public class ShotStoneSystem extends IteratingSystem {
             case SAFE:
                 shotStone.safeTime += deltaTime;
                 if (shotStone.safeTime >= ShotStoneComponent.SAFE_VISIBLE_TIME) {
-                    /*shotStone.state = ShotStoneComponent.State.IDLE;
-                    shotStone.safeTime = 0;*/
                     engine.getSystem(WorldSystem.class).freeEntity(entity);
                 }
                 break;

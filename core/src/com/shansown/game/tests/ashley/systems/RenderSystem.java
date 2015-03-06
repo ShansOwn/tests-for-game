@@ -16,8 +16,8 @@ import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.utils.Array;
 import com.shansown.game.tests.ashley.Mappers;
-import com.shansown.game.tests.ashley.components.RenderComponent;
-import com.shansown.game.tests.ashley.components.TransformComponent;
+import com.shansown.game.tests.ashley.components.graphics.RenderComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 
 public class RenderSystem extends IteratingSystem {
 
@@ -39,7 +39,7 @@ public class RenderSystem extends IteratingSystem {
     private boolean renderMeshes = true;
 
     public RenderSystem(int priority, PerspectiveCamera camera) {
-        super(Family.getFor(RenderComponent.class, TransformComponent.class), priority);
+        super(Family.all(RenderComponent.class, TransformComponent.class).get(), priority);
         this.camera = camera;
         modelBatch = new ModelBatch();
         spriteBatch = new SpriteBatch();

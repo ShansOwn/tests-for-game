@@ -1,4 +1,4 @@
-package com.shansown.game.tests.ashley.creators;
+package com.shansown.game.tests.ashley.managers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;

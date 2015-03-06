@@ -1,4 +1,4 @@
-package com.shansown.game.tests.ashley.creators;
+package com.shansown.game.tests.ashley.managers;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
@@ -20,18 +20,17 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 import com.shansown.game.tests.ashley.Mappers;
-import com.shansown.game.tests.ashley.components.DynamicComponent;
-import com.shansown.game.tests.ashley.components.RenderComponent;
+import com.shansown.game.tests.ashley.components.physics.DynamicComponent;
+import com.shansown.game.tests.ashley.components.graphics.RenderComponent;
 import com.shansown.game.tests.ashley.components.ShotStoneComponent;
-import com.shansown.game.tests.ashley.components.TransformComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 import com.shansown.game.tests.ashley.systems.WorldSystem;
 
-public class ShotStoneCreator implements Disposable {
+public class ShotStonesManager extends Manager implements Disposable {
 
-    private static final String TAG = ShotStoneCreator.class.getSimpleName();
+    private static final String TAG = ShotStonesManager.class.getSimpleName();
 
     private Model model;
-    private PooledEngine engine;
 
     private Array<Disposable> disposables = new Array<>();
 
@@ -43,8 +42,8 @@ public class ShotStoneCreator implements Disposable {
         }
     };
 
-    public ShotStoneCreator(ModelBuilder modelBuilder, PooledEngine engine) {
-        this.engine = engine;
+    public ShotStonesManager(ModelBuilder modelBuilder, PooledEngine engine) {
+        super(engine);
 
         // Model created manually, so we should dispose it manually to
         model = modelBuilder.createSphere(ShotStoneComponent.BBOX_SPHERE_RADIUS,
@@ -70,7 +69,7 @@ public class ShotStoneCreator implements Disposable {
         ModelInstance modelInstance = new ModelInstance(model, position);
 
         ShotStoneComponent shotStone = obtainShotStoneComponent();
-        RenderComponent render = obtainRenderComponent(modelInstance);
+        RenderComponent render = obtainRenderComponent(modelInstance, ShotStoneComponent.VISIBLE_RADIUS);
         TransformComponent transform = obtainTransformComponent(modelInstance);
         DynamicComponent dynamic = obtainDynamicComponent(entity, transform, forPlayer);
 
@@ -94,21 +93,6 @@ public class ShotStoneCreator implements Disposable {
         ShotStoneComponent shotStone = engine.createComponent(ShotStoneComponent.class);
         shotStone.state = ShotStoneComponent.State.DANGEROUS;
         return shotStone;
-    }
-
-    private RenderComponent obtainRenderComponent(ModelInstance modelInstance) {
-        RenderComponent render = engine.createComponent(RenderComponent.class);
-        render.modelInstance = modelInstance;
-        render.visibleRadius = ShotStoneComponent.VISIBLE_RADIUS;
-        render.setColor(0.5f + 0.5f * (float) Math.random(), 0.5f + 0.5f * (float) Math.random(),
-                0.5f + 0.5f * (float) Math.random(), 1f);
-        return render;
-    }
-
-    private TransformComponent obtainTransformComponent(ModelInstance modelInstance) {
-        TransformComponent transform = engine.createComponent(TransformComponent.class);
-        transform.transform = modelInstance.transform;
-        return transform;
     }
 
     private DynamicComponent obtainDynamicComponent(Entity entity, TransformComponent transform, boolean forPlayer) {

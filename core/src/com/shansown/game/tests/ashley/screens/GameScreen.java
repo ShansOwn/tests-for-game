@@ -1,5 +1,6 @@
 package com.shansown.game.tests.ashley.screens;
 
+import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
@@ -11,6 +12,8 @@ import com.badlogic.gdx.math.FloatCounter;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.utils.Disableable;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.PerformanceCounter;
 import com.shansown.game.tests.ashley.AshleyGame;
 import com.shansown.game.tests.ashley.systems.*;
@@ -155,7 +158,11 @@ public class GameScreen implements Screen {
         hud.dispose();
         engine.removeAllEntities();
         engine.clearPools();
-        engine.getSystem(WorldSystem.class).dispose();
-        engine.getSystem(RenderSystem.class).dispose();
+        for (EntitySystem system : engine.getSystems()) {
+            if (system instanceof Disableable) {
+                ((Disposable) system).dispose();
+            }
+            engine.removeSystem(system);
+        }
     }
 }

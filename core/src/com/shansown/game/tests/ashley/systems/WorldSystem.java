@@ -16,10 +16,10 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.PerformanceCounter;
 import com.shansown.game.tests.ashley.AshleyGame;
 import com.shansown.game.tests.ashley.Mappers;
-import com.shansown.game.tests.ashley.creators.GuyCreator;
+import com.shansown.game.tests.ashley.managers.GuysManager;
 import com.shansown.game.tests.ashley.components.*;
-import com.shansown.game.tests.ashley.creators.IslandCreator;
-import com.shansown.game.tests.ashley.creators.ShotStoneCreator;
+import com.shansown.game.tests.ashley.managers.IslandsManager;
+import com.shansown.game.tests.ashley.managers.ShotStonesManager;
 
 public class WorldSystem extends EntitySystem {
 
@@ -44,9 +44,9 @@ public class WorldSystem extends EntitySystem {
     private AshleyGame game;
     private PooledEngine engine;
 
-    private ShotStoneCreator shotStoneCreator;
-    private GuyCreator guyCreator;
-    private IslandCreator islandCreator;
+    private ShotStonesManager shotStonesManager;
+    private GuysManager guysManager;
+    private IslandsManager islandsManager;
 
     private PerformanceCounter performanceCounter;
 
@@ -87,25 +87,25 @@ public class WorldSystem extends EntitySystem {
     }
 
     public void createWorld() {
-        initWorldCreators();
+        initWorldManagers();
         createIsland(tmpV.setZero());
         createPlayerEntities();
         createEnemyEntities();
     }
 
-    private void initWorldCreators() {
-        shotStoneCreator = new ShotStoneCreator(modelBuilder, engine);
-        disposables.add(shotStoneCreator);
+    private void initWorldManagers() {
+        shotStonesManager = new ShotStonesManager(modelBuilder, engine);
+        disposables.add(shotStonesManager);
 
-        guyCreator = new GuyCreator(game.assets, engine);
-        disposables.add(guyCreator);
+        guysManager = new GuysManager(game.assets, engine);
+        disposables.add(guysManager);
 
-        islandCreator = new IslandCreator(game.assets, engine);
-        disposables.add(islandCreator);
+        islandsManager = new IslandsManager(game.assets, engine);
+        disposables.add(islandsManager);
     }
 
     private Entity createIsland(Vector3 position) {
-        return islandCreator.obtain(position);
+        return islandsManager.obtain(position);
     }
 
     private void createPlayerEntities() {
@@ -143,11 +143,11 @@ public class WorldSystem extends EntitySystem {
     }
 
     private Entity obtainGuy(Matrix4 transform, boolean isPlayer) {
-        return guyCreator.obtain(transform, isPlayer);
+        return guysManager.obtain(transform, isPlayer);
     }
 
     public Entity obtainShotStone(Vector3 position, boolean forPlayer) {
-        return shotStoneCreator.obtain(position, forPlayer);
+        return shotStonesManager.obtain(position, forPlayer);
     }
 
     public Vector3 getTerrainY(Vector3 out) {
@@ -227,7 +227,7 @@ public class WorldSystem extends EntitySystem {
 
     public void freeEntity(Entity entity) {
         if (Mappers.shotStone.has(entity)) {
-            shotStoneCreator.free(entity);
+            shotStonesManager.free(entity);
         }
     }
 

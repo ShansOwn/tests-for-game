@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.IntMap;
 import com.shansown.game.tests.ashley.Mappers;
 import com.shansown.game.tests.ashley.components.GuyComponent;
 import com.shansown.game.tests.ashley.components.InputControlComponent;
-import com.shansown.game.tests.ashley.components.KinematicComponent;
+import com.shansown.game.tests.ashley.components.physics.KinematicComponent;
 
 public class InputSystem extends EntitySystem implements InputProcessor {
 
@@ -22,7 +22,6 @@ public class InputSystem extends EntitySystem implements InputProcessor {
 
     private IntMap<Entity> pickedEntities = new IntMap<>(2);
 
-    private final Family family = Family.getFor(InputControlComponent.class);
     private WorldSystem world;
 
     private Camera camera;

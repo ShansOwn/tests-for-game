@@ -6,13 +6,13 @@ import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Vector3;
 import com.shansown.game.tests.ashley.Mappers;
 import com.shansown.game.tests.ashley.components.GuyComponent;
-import com.shansown.game.tests.ashley.components.KinematicComponent;
-import com.shansown.game.tests.ashley.components.TransformComponent;
+import com.shansown.game.tests.ashley.components.physics.KinematicComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 
 public class KinematicSystem extends IteratingSystem {
 
     public KinematicSystem(int priority) {
-        super(Family.getFor(KinematicComponent.class, TransformComponent.class), priority);
+        super(Family.all(KinematicComponent.class, TransformComponent.class).get(), priority);
     }
 
     @Override

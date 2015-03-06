@@ -1,4 +1,4 @@
-package com.shansown.game.tests.ashley.components;
+package com.shansown.game.tests.ashley.components.physics;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.Gdx;

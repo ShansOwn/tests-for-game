@@ -1,4 +1,4 @@
-package com.shansown.game.tests.ashley.components;
+package com.shansown.game.tests.ashley.components.physics;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.Gdx;
@@ -7,7 +7,7 @@ import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Pool;
-import com.shansown.game.tests.ashley.creators.BulletBodyHolder;
+import com.shansown.game.tests.ashley.managers.BulletBodyHolder;
 import com.shansown.game.tests.ashley.systems.WorldSystem;
 
 public class KinematicComponent extends Component implements Pool.Poolable {

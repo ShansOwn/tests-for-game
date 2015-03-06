@@ -3,15 +3,15 @@ package com.shansown.game.tests.ashley.systems;
 import com.badlogic.ashley.core.*;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.shansown.game.tests.ashley.Mappers;
-import com.shansown.game.tests.ashley.components.DynamicComponent;
-import com.shansown.game.tests.ashley.components.TransformComponent;
+import com.shansown.game.tests.ashley.components.physics.DynamicComponent;
+import com.shansown.game.tests.ashley.components.physics.TransformComponent;
 
 public class DynamicSystem extends IteratingSystem {
 
     private static final String TAG = DynamicSystem.class.getSimpleName();
 
     public DynamicSystem(int priority) {
-        super(Family.getFor(DynamicComponent.class, TransformComponent.class), priority);
+        super(Family.all(DynamicComponent.class, TransformComponent.class).get(), priority);
     }
 
     @Override
