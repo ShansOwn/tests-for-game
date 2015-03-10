@@ -20,6 +20,11 @@ public class DynamicComponent extends Component implements Pool.Poolable {
     public btRigidBody body;
     private BulletBodyHolder bodyHolder;
 
+    /** Can only be created by PooledEngine */
+    private DynamicComponent() {
+        // private constructor
+    }
+
     public void init(BulletBodyHolder bodyHolder) {
         this.bodyHolder = bodyHolder;
         body = (btRigidBody) bodyHolder.body;

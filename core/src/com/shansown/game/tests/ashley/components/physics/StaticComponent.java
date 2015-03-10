@@ -20,6 +20,11 @@ public class StaticComponent extends Component implements Pool.Poolable {
     public btCollisionObject object;
     private BulletBodyHolder bodyHolder;
 
+    /** Can only be created by PooledEngine */
+    private StaticComponent() {
+        // private constructor
+    }
+
     public void init(BulletBodyHolder bodyHolder) {
         this.bodyHolder = bodyHolder;
         object = bodyHolder.body;

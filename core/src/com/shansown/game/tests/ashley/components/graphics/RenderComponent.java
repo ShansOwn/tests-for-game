@@ -17,6 +17,11 @@ public class RenderComponent extends Component implements Pool.Poolable {
     public float visibleRadius = 1f;
     public ModelInstance modelInstance;
 
+    /** Can only be created by PooledEngine */
+    private RenderComponent() {
+        // private constructor
+    }
+
     public void setColor (Color color) {
         setColor(color.r, color.g, color.b, color.a);
     }

@@ -19,20 +19,22 @@ public class GuyComponent extends Component implements Pool.Poolable {
     public static final float DAMAGE_TIME = 1f;
     public static final float MASS = 0f;
 
-    public State state = State.IDLE;
+//    public State state = State.IDLE;
     public boolean isPlayer;
-    public float stringTime;
-    public float damageTime;
+    public float stateTime;
+//    public float stringTime;
+//    public float damageTime;
 
-    public enum State {
+    /*public enum State {
         IDLE, STRING, SHOOT, DAMAGE, DEAD
-    }
+    }*/
 
     @Override
     public void reset() {
         Gdx.app.log(TAG, "reset!");
-        state = State.DEAD;
-        stringTime = 0f;
-        damageTime = 0f;
+//        state = State.DEAD;
+        stateTime = 0f;
+//        stringTime = 0f;
+//        damageTime = 0f;
     }
 }

@@ -10,6 +10,11 @@ public class IslandComponent extends Component implements Pool.Poolable {
 
     public static final float VISIBLE_RADIUS = 10f;
 
+    /** Can only be created by PooledEngine */
+    private IslandComponent() {
+        // private constructor
+    }
+
     @Override
     public void reset() {
         Gdx.app.log(TAG, "reset!");

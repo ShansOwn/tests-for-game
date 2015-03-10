@@ -12,6 +12,11 @@ public class TransformComponent extends Component implements Pool.Poolable {
 
     public Matrix4 transform = new Matrix4();
 
+    /** Can only be created by PooledEngine */
+    private TransformComponent() {
+        // private constructor
+    }
+
     @Override
     public void reset() {
         Gdx.app.log(TAG, "reset!");

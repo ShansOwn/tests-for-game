@@ -36,7 +36,8 @@ public class GuySystem extends IteratingSystem {
     @Override
     protected void processEntity(Entity entity, float deltaTime) {
         GuyComponent guy = Mappers.guy.get(entity);
-        switch (guy.state) {
+        guy.stateTime += deltaTime;
+        /*switch (guy.state) {
             case IDLE:
                 break;
             case STRING:
@@ -59,7 +60,7 @@ public class GuySystem extends IteratingSystem {
                 break;
             case DEAD:
                 break;
-        }
+        }*/
     }
 
     private Entity shoot (Entity entity) {

@@ -11,6 +11,11 @@ public class InputControlComponent extends Component implements Pool.Poolable {
     public boolean picked;
     public boolean canPick;
 
+    /** Can only be created by PooledEngine */
+    private InputControlComponent() {
+        // private constructor
+    }
+
     @Override
     public void reset() {
         Gdx.app.log(TAG, "reset!");

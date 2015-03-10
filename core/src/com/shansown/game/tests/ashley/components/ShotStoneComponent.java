@@ -21,6 +21,11 @@ public class ShotStoneComponent extends Component implements Pool.Poolable {
         IDLE, DANGEROUS, SAFE
     }
 
+    /** Can only be created by PooledEngine */
+    private ShotStoneComponent() {
+        // private constructor
+    }
+
     @Override
     public void reset() {
         Gdx.app.log(TAG, "reset!");

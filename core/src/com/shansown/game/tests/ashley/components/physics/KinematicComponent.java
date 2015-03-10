@@ -26,6 +26,11 @@ public class KinematicComponent extends Component implements Pool.Poolable {
     public btRigidBody body;
     private BulletBodyHolder bodyHolder;
 
+    /** Can only be created by PooledEngine */
+    private KinematicComponent() {
+        // private constructor
+    }
+
     public void init(BulletBodyHolder bodyHolder) {
         this.bodyHolder = bodyHolder;
         body = (btRigidBody) bodyHolder.body;
